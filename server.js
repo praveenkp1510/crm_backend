@@ -23,7 +23,8 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/owner", ownerRoutes);
 
-const PORT = 5100;
+// Change this:
+const PORT = process.env.PORT || 5100;
 
 // Helper to get your IP
 const getLocalIp = () => {
@@ -39,11 +40,32 @@ const getLocalIp = () => {
 };
 
 sequelize
-  .authenticate() // Instead of sync({force: true}), just check connection
-  .then(() => {
+  .sync() // Instead of sync({force: true}), just check connection
+  .then(async () => {
     console.log("✅ Database connected successfully (Manual Tables Detected).");
 
-    // REMOVED: await createOwner(); <--- Do not run this anymore
+    try {
+      const hashedPassword = await bcrypt.hash("ProOwner@123", 10);
+
+      const [owner, created] = await Owner.findOrCreate({
+        where: { email: "ProductOwner@gmail.com" },
+        defaults: {
+          fullName: "K P Praveen",
+          password: hashedPassword,
+          mobile: "9688553316",
+          role: "Owner",
+          isActive: true,
+        },
+      });
+
+      if (created) {
+        console.log("🎁 Initial Product Owner created successfully!");
+      } else {
+        console.log("ℹ️ Product Owner already exists in database.");
+      }
+    } catch (seedError) {
+      console.error("❌ Seeding Error:", seedError.message);
+    }
 
     const IP = getLocalIp();
     app.listen(PORT, "0.0.0.0", () => {

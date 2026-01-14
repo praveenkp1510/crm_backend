@@ -1,11 +1,11 @@
 const sequelize = require("../config/db");
 const User = require("./User");
+const Owner = require("./Owner"); // Add this
 
-// Centralized Database Object
 const db = {
   User,
+  Owner, // Add this
   sequelize,
 };
 
-// Exporting the database object
 module.exports = db;
